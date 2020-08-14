@@ -1,0 +1,10 @@
+{
+ "code": 16,
+ "message": "IAM token or API key has to be passed in request",
+ "details": [
+  {
+   "@type": "type.googleapis.com/google.rpc.RequestInfo",
+   "requestId": "7a7a3d4e-d58e-91b1-b77b-bc47adee93de"
+  }
+ ]
+}

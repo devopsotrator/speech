@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CurrentWorkingDirectory</key>
+	<string>/Users/admin</string>
+	<key>WorksheetContents</key>
+	<string>cd ~/tmp
+cat &lt;&lt;-EOF &gt; ~/tmp/body.json
+{
+    "config": {
+        "specification": {
+            "languageCode": "ru-RU"
+        }
+    },
+    "audio": {
+        "uri": "https://storage.yandexcloud.net/speech-test-bucket/lection01.opus"
+    }
+}	
+EOF
+
+mv tmp/body.json body.json
+
+export IAM_TOKEN=$(yc iam create-token)
+
+curl -X POST \
+    -H "Authorization: Bearer ${IAM_TOKEN}" \
+    -d '@body.json' \
+    https://transcribe.api.cloud.yandex.net/speech/stt/v2/longRunningRecognize
+
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0{
+ "done": false,
+ "id": "e03ullkbjvjjtkku95cn",
+ "createdAt": "2020-07-30T16:23:05Z",
+ "createdBy": "aje8npn8f52j8aaulg8d",
+ "modifiedAt": "2020-07-30T16:23:05Z"
+}
+
+job_id='e03ullkbjvjjtkku95cn'
+curl -H "Authorization: Bearer ${IAM_TOKEN}" \
+    https://operation.api.cloud.yandex.net/operations/"$job_id" \
+&gt; lection01_text.json
+
+wc -l speech.json
+  108958 speech.json
+pwd
+/Users/admin
+
+mkdir 300cut
+find ./ \
+    -type f \
+    -exec ffmpeg \
+        -i {} \
+        -f segment \
+        -segment_time 300 \
+        -c copy 300cut/{}%03d.mp3 \; \
+#         -exec rm {} \;
+
+mkdir -p 300cut
+fd -e mp3 -x cut -d '.' -f1 | ffmpeg -i -- -f segment -segment_time 300 -c copy 300cut/%03d.{} \;
+
+for i in {01..06}; do
+    mkdir -p chunked/lection"$i"
+    ffmpeg -i lection"$i".mp3 -f segment -segment_time 300 -c copy %03d.lection"$i".mp3 \;
+done
+</string>
+</dict>
+</plist>
